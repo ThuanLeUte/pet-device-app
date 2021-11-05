@@ -13,7 +13,9 @@ git checkout Test_mqtt
 
 # Go into the repository
 
+```bash
 cd pet-device-app
+```
 
 # Install dependencies
 
