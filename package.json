@@ -1,0 +1,22 @@
+{
+  "name": "pet-device-app",
+  "version": "1.0.0",
+  "description": "pet device app",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThuanLeUte/pet-device-app.git"
+  },
+  "author": "dns2996",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ThuanLeUte/pet-device-app/issues"
+  },
+  "homepage": "https://github.com/ThuanLeUte/pet-device-app#readme",
+  "dependencies": {
+    "mqtt": "^4.2.8"
+  }
+}
