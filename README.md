@@ -21,6 +21,8 @@ cd pet-device-app
 
 Required: Nodejs [https://nodejs.org/en/]
 
+Install mqtt for js:
+
 ```bash
 npm install mqtt --save
 ```
