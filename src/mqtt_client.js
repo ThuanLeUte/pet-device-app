@@ -16,7 +16,7 @@ function connect_server(args) {
   });
 }
 
-//publish
+//publish topic
 function publish(topic, msg, options) {
   console.log("publishing", msg);
 
@@ -25,7 +25,7 @@ function publish(topic, msg, options) {
   }
 }
 
-//subcribe
+//subcribe topic
 function subscribe(topic, callback_func, options) {
   client.subscribe(topic, options);
   //handle incoming messages
