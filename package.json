@@ -4,7 +4,7 @@
   "description": "pet device app",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,8 @@
   "homepage": "https://github.com/ThuanLeUte/pet-device-app#readme",
   "dependencies": {
     "mqtt": "^4.2.8"
+  },
+  "devDependencies": {
+    "electron": "^17.1.0"
   }
 }

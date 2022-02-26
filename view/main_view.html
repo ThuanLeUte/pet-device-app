@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pet Device App</title>
+    <link rel="stylesheet" href="style/my_style.css">
+    <script defer src="js/funcApp.js"></script>
+</head>
+
+<body onresize="Resize()">
+    <div class=" mainApp">
+        <div class="topBar">
+            <div class="titleBar">
+                <div class="window-appicon" style="background-image: url(&quot;img/icon_2.ico&quot;);"></div>
+                <div class="title">Pet Device App</div>
+            </div>
+            <div class="toogle_button" title="Dark mode">
+                <label class="switch">
+                    <input type="checkbox" id="darkmode_toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="titleBarBtns">
+                <div class="button_wrap">
+                    <button id="minimize_Btn" class="topBtn minimizeBtn" title="Minimize"></button>
+                </div>
+                <div class="button_wrap">
+                    <button id="maxRes_Btn" class="topBtn maximizeBtn" title="Maximize"></button>
+                </div>
+                <div class="button_wrap close">
+                    <button id="close_Btn" class="topBtn closeBtn" title="Close"></button>
+                </div>
+            </div>
+        </div>
+        <div class="contentArea" id="contentArea">
+            <div class="contentPages">
+                <div class="header">
+                    <div>
+                        <div class="headline_container">
+                            <div class="headline_text">Pet Device</div>
+                        </div>
+                        <div class="tabs_container">
+                            <button id="showHideMenu" class="toggleButton_menu"></button>
+                            <div class="tab">
+                                <button class="tablinks active" onclick="openTab(event,'data_info_content_tab')"
+                                    id="tab_config">Devices</button>
+                                <button class="tablinks" onclick="openTab(event,'setting_content_tab')"
+                                    id="tab_sign_in">Setting</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="Content_container" id="Content_container">
+                    <div id="data_info_content_tab" class="tabcontent" style="display: block">
+                        <div class="control_menu" id="control_menu">
+                            <div class="sub_headline_text">Devices list</div>
+                            <div class="setting_line" id="btn_device_1" title="Device 1"><button
+                                    class="square_btn">+</button>
+                                <label for="btn_connect_2">Device 1</label>
+                            </div>
+                            <div class="setting_line" id="btn_device_2" title="Device 2"><button
+                                    class="square_btn">+</button>
+                                <label for="btn_connect_2">Device 2</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="setting_content_tab" class="tabcontent" style="display: none">
+                        <div class="config_content" id="config_content">
+                            <div></div>
+                            <div class="config_region">
+                                <div class="textbox_line">
+                                    <div></div>
+                                    <label for="connect_device_input">Device ID</label>
+                                    <div class="dropdownlist">
+                                        <div>
+                                            <input type="text" placeholder="Device ID..." class="my_input_drd"
+                                                id="connect_device_input">
+                                            <div class="dropdown_container" id="connect_device_container"
+                                                onmouseenter="CheckHoverDropdownContainer(true)"
+                                                onmouseleave="CheckHoverDropdownContainer(false)">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="drd_btn" id="connect_device_drd_btn"
+                                                onclick="onDrdClick('connect_device_container')"
+                                                onfocusout="onDrdFocusOut('connect_device_container')"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div><button class="my_button" id="btn_connect">Start connect</button></div>
+                                <div class="config_region" id="setting_region" style="display: none; margin-top: 65px">
+                                    <div class="textbox_line">
+                                        <div></div>
+                                        <label for="nfc_id_input">NFC ID</label>
+                                        <input type="text" placeholder="Id..." class="my_input" id="nfc_id_input"
+                                            disabled>
+                                        <div></div>
+                                    </div>
+                                    <div class="textbox_line">
+                                        <div></div>
+                                        <label for="pet_name_input">Pet name</label>
+                                        <div class="dropdownlist">
+                                            <div>
+                                                <input type="text" placeholder="Name..." class="my_input_drd"
+                                                    id="pet_name_input">
+                                                <div class="dropdown_container" id="pet_name_container"
+                                                    onmouseenter="CheckHoverDropdownContainer(true)"
+                                                    onmouseleave="CheckHoverDropdownContainer(false)">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="drd_btn" id="pet_name_drd_btn"
+                                                    onclick="onDrdClick('pet_name_container')"
+                                                    onfocusout="onDrdFocusOut('pet_name_container')"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class=" textbox_line">
+                                        <div></div>
+                                        <label for="species_input">Species</label>
+                                        <div class="dropdownlist">
+                                            <div>
+                                                <input type="text" placeholder="Species..." class="my_input_drd"
+                                                    id="species_input">
+                                                <div class="dropdown_container" id="species_container"
+                                                    onmouseenter="CheckHoverDropdownContainer(true)"
+                                                    onmouseleave="CheckHoverDropdownContainer(false)">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="drd_btn" id="species_drd_btn"
+                                                    onclick="onDrdClick('species_container')"
+                                                    onfocusout="onDrdFocusOut('species_container')"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div><button class="my_button" id="btn_find_nfc">Read NFC</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footBar"></div>
+    </div>
+</body>

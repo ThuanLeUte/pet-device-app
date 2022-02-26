@@ -1,6 +1,6 @@
 const { IsDefined } = require("./utils.js");
 
-module.exports = { connect_server, publish, subscribe };
+module.exports = { connect_server, publish, subscribe, unsubscribe };
 
 const mqtt = require("mqtt");
 let client;
@@ -26,10 +26,14 @@ function publish(topic, msg, options) {
 }
 
 //subcribe topic
-function subscribe(topic, callback_func, options) {
-  client.subscribe(topic, options);
+function subscribe(topic_name, callback_func, options) {
+  client.subscribe(topic_name, options);
   //handle incoming messages
-  client.on("message", function (topic, message) {
-    callback_func(topic, message);
-  });
+  client.on("message", callback_func);
+}
+
+//unsubcribe topic
+function unsubscribe(topic, callback_func) {
+  client.unsubscribe(topic);
+  client.off("message", callback_func);
 }
