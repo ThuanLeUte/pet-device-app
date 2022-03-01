@@ -8,5 +8,10 @@ var options = {
 connect_server(["mqtt://test.mosquitto.org"]);
 
 var timer_id = setInterval(function () {
-  publish("testtopic", "test message", options);
+  var obj = {
+    type: "request",
+    value: false,
+  };
+  // publish("Device_3", "Alive", options);
+  publish("Device_3/nfc_setting", JSON.stringify(obj), options);
 }, 1000);

@@ -1,5 +1,3 @@
-const { IsDefined } = require("./utils.js");
-
 module.exports = { connect_server, publish, subscribe, unsubscribe };
 
 const mqtt = require("mqtt");

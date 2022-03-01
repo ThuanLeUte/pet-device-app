@@ -9,7 +9,7 @@
   --color-background-btn-hover: rgba(255, 255, 255, 0.1);
   --color-background-btn-close-active: rgba(232, 17, 35, 0.5) !important;
   --color-background-btn-active: rgba(255, 255, 255, 0.3);
-
+  --color-headline: rgb(124, 124, 124);
   --color-placeholder: rgb(166, 166, 156);
   --color-webkit-scrollbar: #5a5a5a;
   --color-webkit-scrollbar-hover: #6e6e6e;
@@ -61,7 +61,7 @@
   --color-background-btn-hover: #272c366c;
   --color-background-btn-close-active: rgba(232, 17, 35, 0.5) !important;
   --color-background-btn-active: #272c3638;
-
+  --color-headline: rgb(124, 124, 124);
   --color-placeholder: rgba(122, 122, 115, 0.87);
   --color-webkit-scrollbar: #9c9c9cc2;
   --color-webkit-scrollbar-hover: #9c9c9c;
@@ -110,6 +110,16 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: var(--color-bodyfont);
   background-color: var(--color-bodybackground);
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer */
+  -khtml-user-select: none;
+  /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none;
+  /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none;
+  /* Disable Android and iOS callouts*/
 }
 
 .mainApp {
@@ -356,10 +366,12 @@ body {
 }
 
 .sub_headline_text {
-  font-size: 1.8rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  font-size: 0.9rem;
+  color: var(--color-headline);
   text-align: left;
-  margin-left: 20px;
-  margin-top: 10px;
 }
 
 .toogle_button {
@@ -574,7 +586,7 @@ input[disabled] {
   background-color: var(--color-background-btnmenu-active);
 }
 
-.control_menu {
+.devices_menu {
   height: calc(100vh - 155px);
   min-width: 150px;
   max-width: 150px;
@@ -589,7 +601,7 @@ input[disabled] {
   -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
 }
 
-.setting_line {
+.device_line {
   width: 200px;
   background: var(--color-background-btnmenu-active);
   color: var(--color-bodyfont);
@@ -598,19 +610,66 @@ input[disabled] {
   transition: 0.4s;
 }
 
-.setting_line:hover {
+.device_line:hover {
   background: var(--color-backgroundcolor-btn-hover);
   color: var(--color-btn);
 }
 
-.setting_line:active {
+.device_line:active {
   background: var(--color-backgroundcolor-btn);
 }
 
-.setting_line label {
+.device_line.active {
+  background: var(--color-backgroundcolor-btn);
+}
+
+.device_line label {
   margin-top: 2px;
   font-size: 1.5rem;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.device_line:focus {
+  outline-style: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.nfc_line {
+  width: 200px;
+  background: var(--color-background-btnmenu-active);
+  color: var(--color-bodyfont);
+  display: flex;
+  flex-direction: row;
+  transition: 0.4s;
+  margin-left: 10px;
+  margin-top: 10px;
+  border-radius: 50px;
+}
+
+.nfc_line:hover {
+  background: var(--color-backgroundcolor-btn-hover);
+  color: var(--color-btn);
+}
+
+.nfc_line:active {
+  background: var(--color-backgroundcolor-btn);
+}
+
+.nfc_line.active {
+  background: var(--color-backgroundcolor-btn);
+}
+
+.nfc_line label {
+  margin-top: 2px;
+  font-size: 1.5rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nfc_line:focus {
+  outline-style: none;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .overflow {
@@ -619,7 +678,19 @@ input[disabled] {
   overflow: auto;
 }
 
-.monitor_visualization_region {
+.display {
+  display: grid;
+  grid-template-rows: 60% 3px 1fr;
+  height: 100%;
+  width: 100%;
+  background: var(--color-background-tab-btn-active);
+}
+
+.split {
+  background: var(--color-background-btnmenu-active);
+}
+
+.monitor_nfc_region {
   position: relative;
   height: max-content;
   padding: 20px;

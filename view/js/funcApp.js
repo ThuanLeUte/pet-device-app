@@ -7,6 +7,7 @@ const {
 const { ipcRenderer } = require("electron");
 const { connect } = require("mqtt");
 const ipc = ipcRenderer;
+const fs = require("fs");
 
 const darkmode = document.getElementById("darkmode_toggle");
 const minimize_Btn = document.getElementById("minimize_Btn");
@@ -18,20 +19,32 @@ const connect_device_container = document.getElementById(
   "connect_device_container"
 );
 const connect_device = document.getElementById("connect_device_input");
+const nfc_id_input = document.getElementById("nfc_id_input");
 const pet_name_container = document.getElementById("pet_name_container");
 const pet_name = document.getElementById("pet_name_input");
 const species_container = document.getElementById("species_container");
 const species = document.getElementById("species_input");
+const devices_menu = document.getElementById("devices_menu");
+const monitor_nfc_region = document.getElementById("monitor_nfc_region");
+const info_nfc_region = document.getElementById("info_nfc_region");
 
 //Global variables for js
 let IsInDropdown = false;
 let lst_items_connect_device = [];
 let lst_items_pet_name = [];
 let lst_items_pet_species = [];
-
+let devices;
+let curr_selected_device = "";
 const dropbox_item_template = [
   "<div title='%VALUE%'>",
   "<div class='dropdown_container_item' onclick='selectDropboxItem(this.parentElement, this)'>%VALUE%</div>",
+  "</div>\r\n",
+].join("\r\n");
+
+const item_template = [
+  "<div class='%ITEM%' id='%NAME1%%NAME2%' title='%NAME2%'>",
+  "<button class='square_btn' onclick='%FUNC%(this.parentElement)'>+</button>",
+  "<label for='%NAME1%_%NAME2%' onclick='%FUNC%(this.parentElement)'>%NAME2%</label>",
   "</div>\r\n",
 ].join("\r\n");
 
@@ -62,6 +75,10 @@ function includeNewItemDropbox(dropbox_container, lstItems, item) {
   }
 }
 
+function IsDefined(obj) {
+  return typeof obj != "undefined";
+}
+
 function includeItemsDropbox(dropbox_container, lstItems) {
   lstItems.forEach((el) => {
     lstItems.push(el);
@@ -71,7 +88,23 @@ function includeItemsDropbox(dropbox_container, lstItems) {
 }
 
 function handle_msg(topic, message) {
-  // if (topic == "")
+  if (
+    topic == `${connect_device.value}/nfc_setting` &&
+    find_nfc_Btn.textContent == "Waiting..."
+  ) {
+    const json_data = JSON.parse(message.toString());
+    if (json_data["type"] == "response") {
+      nfc_id_input.value = json_data["value"];
+      if (IsDefined(devices[connect_device.value])) {
+        pet_name.value =
+          devices[connect_device.value][json_data["value"]]["Name"];
+        species.value =
+          devices[connect_device.value][json_data["value"]]["Species"];
+      }
+      find_nfc_Btn.disabled = false;
+      find_nfc_Btn.textContent = "Setup done";
+    }
+  }
   console.log("message is " + message);
   console.log("topic is " + topic);
 }
@@ -144,6 +177,54 @@ function CreateDevicesElement(item, is_checked) {
   return label;
 }
 
+function getDevicesList(path) {
+  devices = require(path);
+  updateDevicesList();
+}
+
+function updateDevicesList() {
+  devices_menu.innerHTML = "";
+  Object.keys(devices).forEach(function (key) {
+    devices_menu.innerHTML += item_template
+      .replace(/%ITEM%/g, "device_line")
+      .replace(/%NAME1%/g, "")
+      .replace(/%NAME2%/g, key)
+      .replace(/%FUNC%/g, "showDeviceInfo");
+  });
+}
+function showDeviceInfo(selected_item) {
+  monitor_nfc_region.innerHTML = "";
+  let item_lines = document.getElementsByClassName("device_line");
+  for (let device of item_lines) {
+    device.className = device.className.replace(" active", "");
+  }
+
+  Object.keys(devices[selected_item.id]).forEach(function (nfc) {
+    monitor_nfc_region.innerHTML += item_template
+      .replace(/%ITEM%/g, "nfc_line")
+      .replace(/%NAME1%/g, selected_item.id)
+      .replace(/%NAME2%/g, nfc)
+      .replace(/%FUNC%/g, "showNFCInfo");
+  });
+  selected_item.className += " active";
+  curr_selected_device = selected_item.id;
+}
+
+function showNFCInfo(selected_item) {
+  info_nfc_region.innerHTML = "";
+  let item_lines = document.getElementsByClassName("nfc_line");
+  for (let nfc of item_lines) {
+    nfc.className = nfc.className.replace(" active", "");
+  }
+  info_nfc_region.innerHTML += `<div>\tName: ${
+    devices[curr_selected_device][selected_item.title]["Name"]
+  }</div>`;
+  info_nfc_region.innerHTML += `<div>\tSpecies: ${
+    devices[curr_selected_device][selected_item.title]["Species"]
+  }</div>`;
+  selected_item.className += " active";
+}
+
 darkmode.addEventListener("change", () => {
   if (darkmode.checked) {
     setTheme("dark_theme");
@@ -184,8 +265,34 @@ find_nfc_Btn.addEventListener("click", () => {
   if (find_nfc_Btn.textContent == "Read NFC") {
     find_nfc_Btn.textContent = "Waiting...";
     find_nfc_Btn.disabled = true;
+    const req = {
+      type: "request",
+      value: true,
+    };
+    publish(
+      `${connect_device.value}/nfc_setting`,
+      JSON.stringify(req),
+      options
+    );
   } else if (find_nfc_Btn.textContent == "Setup done") {
+    if (!IsDefined(devices[connect_device.value]))
+      devices[connect_device.value] = {};
+    devices[connect_device.value][nfc_id_input.value] = {
+      Name: `${pet_name.value}`,
+      Species: `${species.value}`,
+    };
+    saveJsonData();
+    updateDevicesList();
     find_nfc_Btn.textContent = "Read NFC";
+    const req = {
+      type: "request",
+      value: false,
+    };
+    publish(
+      `${connect_device.value}/nfc_setting`,
+      JSON.stringify(req),
+      options
+    );
   }
 });
 
@@ -208,6 +315,14 @@ ipc.on("isMaximized", () => {
 ipc.on("isRestored", () => {
   changeMaxResBtn(false);
 });
+
+function saveJsonData() {
+  const strJSON = JSON.stringify(devices);
+  fs.writeFile("./data/devices.json", strJSON, function (err) {
+    if (err) throw err;
+    console.log("Saved!");
+  });
+}
 
 function changeMaxResBtn(isMaximizedApp) {
   if (isMaximizedApp) {
@@ -265,6 +380,7 @@ function initTheme() {
 // Immediately invoked function on initial load
 initTheme();
 Resize();
+getDevicesList("../data/devices.json");
 connect_server(["mqtt://test.mosquitto.org"]);
 
 includeItemsDropbox(connect_device_container, lst_items_connect_device);
@@ -275,3 +391,5 @@ window.checkHoverDropdownContainer = checkHoverDropdownContainer;
 window.openTab = openTab;
 window.onDrdClick = onDrdClick;
 window.onDrdFocusOut = onDrdFocusOut;
+window.showDeviceInfo = showDeviceInfo;
+window.showNFCInfo = showNFCInfo;
