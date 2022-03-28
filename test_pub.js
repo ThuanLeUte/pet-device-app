@@ -12,6 +12,13 @@ var timer_id = setInterval(function () {
     type: "request",
     value: false,
   };
+  var obj1 = {
+    type: "req",
+    data: {
+      req: "del_nfc",
+      nfc_id: "02C400450CB243",
+    },
+  };
   // publish("Device_3", "Alive", options);
   publish("Device_3/nfc_setting", JSON.stringify(obj), options);
 }, 1000);

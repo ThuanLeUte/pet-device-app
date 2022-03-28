@@ -586,8 +586,24 @@ input[disabled] {
   background-color: var(--color-background-btnmenu-active);
 }
 
-.devices_menu {
+.devices_menu_all {
   height: calc(100vh - 155px);
+  min-width: 150px;
+  max-width: 150px;
+  overflow: hidden;
+  background-color: var(--color-background-btnmenu-active);
+
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer */
+  -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+  display: grid;
+  grid-template-rows: 25px auto 25px 100px;
+}
+
+.devices_menu {
+  height: 100%;
   min-width: 150px;
   max-width: 150px;
   overflow: hidden;
@@ -676,6 +692,14 @@ input[disabled] {
   flex-grow: 2;
   background: var(--color-background-tab-btn-active);
   overflow: auto;
+}
+
+.nfc_info_display {
+  display: grid;
+  grid-template-rows: 60% 3px 1fr;
+  height: 100%;
+  width: 98%;
+  background: var(--color-background-tab-btn-active);
 }
 
 .display {
@@ -768,7 +792,7 @@ input[disabled] {
 .changelog_headline {
   margin-top: 45px;
   height: 70px;
-  display: none;
+  display: flex;
   flex-direction: row;
   font-size: 1.5rem;
   justify-content: center;
@@ -862,6 +886,29 @@ input[disabled] {
   float: right;
 }
 
+.delete_btn {
+  height: 35px;
+  min-width: 35px;
+  color: inherit;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  display: flex;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+  font-size: small;
+  align-items: center;
+  justify-content: center;
+  font-size: 17.2px;
+  padding: 0.6rem;
+  font-family: Segoe MDL2 Assets;
+  float: right;
+}
+
+.delete_btn:hover {
+  background: var(--color-background-btn-active);
+}
+
 .drd_btn {
   height: 25px;
   width: 28px;
@@ -899,7 +946,7 @@ input[disabled] {
   position: absolute;
   z-index: 99;
   margin-left: 5px;
-  margin-top: -20px;
+  margin-top: 15px;
   background-color: var(--background-reload);
   color: var(--color-reload);
   padding: 0.4rem;

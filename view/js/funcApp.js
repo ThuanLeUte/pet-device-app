@@ -3,6 +3,8 @@ const {
   publish,
   subscribe,
   unsubscribe,
+  add_callback,
+  remove_callback,
 } = require("../src/mqtt_client.js");
 const { ipcRenderer } = require("electron");
 const { connect } = require("mqtt");
@@ -27,14 +29,20 @@ const species = document.getElementById("species_input");
 const devices_menu = document.getElementById("devices_menu");
 const monitor_nfc_region = document.getElementById("monitor_nfc_region");
 const info_nfc_region = document.getElementById("info_nfc_region");
+const changelog_region = document.getElementById("changelog_region");
+const clear_changelog = document.getElementById("clear_changelog");
 
 //Global variables for js
+let device_requested_del_nfc = "";
+let selected_nfc;
+let is_requested_del_nfc = false;
 let IsInDropdown = false;
 let lst_items_connect_device = [];
 let lst_items_pet_name = [];
 let lst_items_pet_species = [];
 let devices;
 let curr_selected_device = "";
+let log_odd_even = "odd";
 const dropbox_item_template = [
   "<div title='%VALUE%'>",
   "<div class='dropdown_container_item' onclick='selectDropboxItem(this.parentElement, this)'>%VALUE%</div>",
@@ -43,10 +51,28 @@ const dropbox_item_template = [
 
 const item_template = [
   "<div class='%ITEM%' id='%NAME1%%NAME2%' title='%NAME2%'>",
-  "<button class='square_btn' onclick='%FUNC%(this.parentElement)'>+</button>",
+  "<button class='%BUTTON_CLASS%' onclick='%BUTTON_FUNC%(this.parentElement)'>-</button>",
   "<label for='%NAME1%_%NAME2%' onclick='%FUNC%(this.parentElement)'>%NAME2%</label>",
   "</div>\r\n",
 ].join("\r\n");
+
+const change_log_template = `<div class="changelog_lines %TYPE%">
+<div class="changelog_line">
+    <div class="log_lockername">Device</div>
+    <div class="log_lockername">Name</div>
+    <div class="log_lockername">ID</div>
+</div>
+<div class="changelog_line">
+    <div class="log">%DEVICE%</div>
+    <div class="log">%NAME%</div>
+    <div class="log">%ID%</div>
+</div>
+<div class="changelog_line">
+    <div class="log_date">%DATE%</div>
+    <div class="log"></div>
+    <div class="log">Permission: %P%</div>
+</div>
+</div>`;
 
 var options = {
   retain: true,
@@ -95,17 +121,76 @@ function handle_msg(topic, message) {
     const json_data = JSON.parse(message.toString());
     if (json_data["type"] == "response") {
       nfc_id_input.value = json_data["value"];
-      if (IsDefined(devices[connect_device.value])) {
+      if (
+        IsDefined(devices[connect_device.value]) &&
+        IsDefined(devices[connect_device.value][json_data["value"]])
+      ) {
         pet_name.value =
           devices[connect_device.value][json_data["value"]]["Name"];
         species.value =
           devices[connect_device.value][json_data["value"]]["Species"];
+      } else {
+        pet_name.value = "";
+        species.value = "";
       }
       find_nfc_Btn.disabled = false;
       find_nfc_Btn.textContent = "Setup done";
     }
+  } else if (topic == `${device_requested_del_nfc}/up`) {
+    const json_data = JSON.parse(message.toString());
+    if (json_data["type"] === "res") {
+      if (
+        json_data["data"]["req"] == "del_nfc" &&
+        json_data["data"]["res"] == "ok"
+      ) {
+        is_requested_del_nfc = false;
+        selected_nfc.remove();
+        delete devices[device_requested_del_nfc][selected_nfc.title];
+        device_requested_del_nfc = "";
+        saveJsonData();
+      }
+    }
   }
-  console.log("message is " + message);
+
+  if (topic.includes("/up")) {
+    let device_name = topic.replace("/up", "");
+    const json_data = JSON.parse(message.toString());
+    if (json_data["type"] === "nt") {
+      if (json_data["data"]["nt"] === "nfc_scan") {
+        let tmp_changelog = change_log_template.replace(
+          "%DEVICE%",
+          device_name
+        );
+        tmp_changelog = tmp_changelog.replace("%TYPE%", log_odd_even);
+        tmp_changelog = tmp_changelog.replace(
+          "%ID%",
+          json_data["data"]["nfc_id"]
+        );
+        let curr_pet_name = "unknown";
+        if (
+          IsDefined(devices[device_name]) &&
+          IsDefined(devices[device_name][json_data["data"]["nfc_id"]])
+        ) {
+          curr_pet_name =
+            devices[device_name][json_data["data"]["nfc_id"]]["Name"];
+        }
+        tmp_changelog = tmp_changelog.replace("%NAME%", curr_pet_name);
+        tmp_changelog = tmp_changelog.replace(
+          "%P%",
+          json_data["data"]["permission"]
+        );
+        let today = new Date();
+        tmp_changelog = tmp_changelog.replace(
+          "%DATE%",
+          `${today.toLocaleDateString()} ${timeConversionSlicker(
+            today.toLocaleTimeString()
+          )}`
+        );
+        changelog_region.innerHTML += tmp_changelog;
+        log_odd_even = log_odd_even == "odd" ? "even" : "odd";
+      }
+    }
+  }
   console.log("topic is " + topic);
 }
 
@@ -124,6 +209,12 @@ function openTab(evt, tabName) {
   tablinks = document.getElementsByClassName("tablinks");
   for (i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  if (tabName == "data_info_content_tab") {
+    changelog_headline.style.display = "flex";
+  } else {
+    changelog_headline.style.display = "none";
   }
 
   document.getElementById(tabName).style.display = "block";
@@ -179,17 +270,28 @@ function CreateDevicesElement(item, is_checked) {
 
 function getDevicesList(path) {
   devices = require(path);
-  updateDevicesList();
+  updateDevicesList(true);
 }
 
-function updateDevicesList() {
+function updateDevicesList(is_init = false) {
   devices_menu.innerHTML = "";
   Object.keys(devices).forEach(function (key) {
     devices_menu.innerHTML += item_template
       .replace(/%ITEM%/g, "device_line")
       .replace(/%NAME1%/g, "")
       .replace(/%NAME2%/g, key)
+      .replace(/%BUTTON_CLASS%/g, "square_btn")
+      .replace(/%BUTTON_FUNC%/g, "showDeviceInfo")
       .replace(/%FUNC%/g, "showDeviceInfo");
+    if (is_init) {
+      const req = {
+        type: "request",
+        value: false,
+      };
+      publish(`${key}/nfc_setting`, JSON.stringify(req), options);
+      subscribe(`${key}/up`, { qos: 1 });
+      // subscribe(`${key}/nfc_setting`, { qos: 1 });
+    }
   });
 }
 function showDeviceInfo(selected_item) {
@@ -204,10 +306,27 @@ function showDeviceInfo(selected_item) {
       .replace(/%ITEM%/g, "nfc_line")
       .replace(/%NAME1%/g, selected_item.id)
       .replace(/%NAME2%/g, nfc)
+      .replace(/%BUTTON_CLASS%/g, "delete_btn")
+      .replace(/%BUTTON_FUNC%/g, "deleteNFCInfo")
       .replace(/%FUNC%/g, "showNFCInfo");
   });
   selected_item.className += " active";
   curr_selected_device = selected_item.id;
+}
+
+function deleteNFCInfo(selected_item) {
+  if (is_requested_del_nfc) return;
+  const req = {
+    type: "req",
+    data: {
+      req: "del_nfc",
+      nfc_id: selected_item.title,
+    },
+  };
+  device_requested_del_nfc = curr_selected_device;
+  publish(`${device_requested_del_nfc}/down`, JSON.stringify(req), options);
+  selected_nfc = selected_item;
+  is_requested_del_nfc = true;
 }
 
 function showNFCInfo(selected_item) {
@@ -242,9 +361,12 @@ connect_Btn.addEventListener("click", () => {
     }
     connect_Btn.textContent = "Disconnect";
     connect_device.disabled = true;
-    subscribe(connect_device.value, handle_msg, { qos: 1 });
-    subscribe(connect_device.value + "/nfc_setting", handle_msg, { qos: 1 });
-    // subscribe("testtopic", handle_msg, { qos: 1 });
+    // subscribe(connect_device.value, { qos: 1 });
+    subscribe(connect_device.value + "/nfc_setting", { qos: 1 });
+    if (!IsDefined(devices[connect_device.value])) {
+      subscribe(connect_device.value + "/up", { qos: 1 });
+    }
+    // subscribe("testtopic", { qos: 1 });
     includeNewItemDropbox(
       connect_device_container,
       lst_items_connect_device,
@@ -252,12 +374,23 @@ connect_Btn.addEventListener("click", () => {
     );
     setting_region.style.display = "block";
   } else {
-    unsubscribe(connect_device.value, handle_msg);
-    unsubscribe(connect_device.value + "/nfc_setting", handle_msg);
-    // unsubscribe("testtopic", handle_msg);
+    // unsubscribe(connect_device.value);
+    unsubscribe(connect_device.value + "/nfc_setting");
+    // unsubscribe("testtopic");
     connect_Btn.textContent = "Start connect";
     setting_region.style.display = "none";
     connect_device.disabled = false;
+    find_nfc_Btn.textContent = "Read NFC";
+    find_nfc_Btn.disabled = false;
+    const req = {
+      type: "request",
+      value: false,
+    };
+    publish(
+      `${connect_device.value}/nfc_setting`,
+      JSON.stringify(req),
+      options
+    );
   }
 });
 
@@ -296,7 +429,12 @@ find_nfc_Btn.addEventListener("click", () => {
   }
 });
 
+clear_changelog.addEventListener("click", () => {
+  removeAllChildNodes(changelog_region);
+});
+
 close_Btn.addEventListener("click", () => {
+  remove_callback(handle_msg);
   ipc.send("closeApp");
 });
 
@@ -380,8 +518,9 @@ function initTheme() {
 // Immediately invoked function on initial load
 initTheme();
 Resize();
-getDevicesList("../data/devices.json");
 connect_server(["mqtt://test.mosquitto.org"]);
+add_callback(handle_msg);
+getDevicesList("../data/devices.json");
 
 includeItemsDropbox(connect_device_container, lst_items_connect_device);
 includeItemsDropbox(pet_name_container, lst_items_pet_name);

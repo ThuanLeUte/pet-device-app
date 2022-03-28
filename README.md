@@ -27,7 +27,18 @@ Install mqtt for js:
 npm install mqtt --save
 ```
 
+Install electron for js:
+
+```bash
+npm install electron --save-dev
+```
+
 # Run the app
+
+```bash
+npm start
+
+```
 
 For test
 

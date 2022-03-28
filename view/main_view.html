@@ -46,25 +46,35 @@
                                 <button class="tablinks active" onclick="openTab(event,'data_info_content_tab')"
                                     id="tab_config">Devices</button>
                                 <button class="tablinks" onclick="openTab(event,'setting_content_tab')"
-                                    id="tab_sign_in">Setting</button>
+                                    id="tab_setting">Setting</button>
                             </div>
                         </div>
+                    </div>
+                    <div class="changelog_headline" id="changelog_headline">
+                        <div class="changelog_title">Logs</div>
+                        <button class="my_button" id="clear_changelog" style="margin-right: 20px">Clear</button>
                     </div>
                 </div>
                 <div class="Content_container" id="Content_container">
                     <div id="data_info_content_tab" class="tabcontent" style="display: block">
                         <div class="monitor_content" id="monitor_content">
-                            <div class="devices_menu" id="devices_menu">
+                            <div class="devices_menu_all">
                                 <div class="sub_headline_text">LIST DEVICES</div>
+                                <div class="devices_menu" id="devices_menu">
+                                </div>
+                                <div class="sub_headline_text">NFC INFO</div>
+                                <div class="nfc_info_display" id="info_nfc_region">
+                                </div>
                             </div>
                             <div class="display">
                                 <div class="overflow">
                                     <div class="monitor_nfc_region" id="monitor_nfc_region">
                                     </div>
                                 </div>
-                                <div class="split"></div>
-                                <div class="display" id="info_nfc_region">
-                                </div>
+
+                            </div>
+                            <div class="changelog_region" id="changelog_region">
+                                
                             </div>
                         </div>
                     </div>
